@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Vazirmatn', Tahoma, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  font-feature-settings: 'ss01';
+  color: #173f3c;
+  background: #f7f7f3;
+}
+
+html {
+  min-width: 320px;
+  height: 100%;
+  overflow: hidden;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filter-select {
+  display: block;
+  width: 100%;
+  appearance: none;
+  border: 1px solid #e5e9e5;
+  border-radius: 0.5rem;
+  background-color: white;
+  padding: 0.7rem 0.75rem;
+  color: #526963;
+  font-size: 0.7rem;
+  outline: none;
+  transition: border-color 150ms ease;
+}
+
+.filter-select:focus {
+  border-color: #10443e;
+}
