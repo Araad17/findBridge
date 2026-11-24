@@ -34,6 +34,17 @@ type FilterOptions = {
 
 type UrlParams = { ref?: string; reset?: string; verify?: string };
 
+const isTab = (value: unknown): value is Tab =>
+	[
+		"home",
+		"scholarships",
+		"detail",
+		"guide",
+		"login",
+		"signup",
+		"dashboard",
+	].includes(value as string);
+
 const readUrlParams = (): UrlParams => {
 	const params = new URLSearchParams(window.location.search);
 	return {
@@ -65,8 +76,33 @@ function App() {
 	const [notice, setNotice] = useState("");
 
 	const clearUrlParams = useCallback(() => {
-		window.history.replaceState({}, "", window.location.pathname);
+		window.history.replaceState(
+			window.history.state ?? {},
+			"",
+			window.location.pathname,
+		);
 		setUrlParams({});
+	}, []);
+
+	useEffect(() => {
+		const state =
+			typeof window.history.state === "object" && window.history.state !== null
+				? window.history.state
+				: {};
+		window.history.replaceState(
+			{ ...state, findBridgeTab: activeTab },
+			"",
+			window.location.href,
+		);
+
+		const handlePopState = (event: PopStateEvent) => {
+			const previousTab = event.state?.findBridgeTab;
+			setActiveTab(isTab(previousTab) ? previousTab : "home");
+			window.scrollTo({ top: 0, behavior: "smooth" });
+		};
+
+		window.addEventListener("popstate", handlePopState);
+		return () => window.removeEventListener("popstate", handlePopState);
 	}, []);
 
 	// تایید ایمیل از روی لینکی که به ایمیل ارسال شده است
@@ -128,8 +164,24 @@ function App() {
 	};
 
 	const navigateToTab = (tab: Tab) => {
+		if (activeTab === tab) return;
+		const state =
+			typeof window.history.state === "object" && window.history.state !== null
+				? window.history.state
+				: {};
+		window.history.pushState(
+			{ ...state, findBridgeTab: tab },
+			"",
+			window.location.href,
+		);
 		setActiveTab(tab);
 		window.scrollTo({ top: 0, behavior: "smooth" });
+	};
+
+	const exitWebsite = () => {
+		if (window.confirm("آیا می‌خواهید از وب‌سایت خارج شوید؟")) {
+			window.location.replace("about:blank");
+		}
 	};
 
 	const toggleSaved = async (id: number) => {
@@ -251,13 +303,15 @@ function App() {
 			>
 				<div className="mx-auto flex h-11 max-w-6xl items-center justify-between px-5 lg:px-8">
 					<a
-						aria-label="بورسیه‌یار، صفحه اصلی"
+						aria-label="بورسیه‌یار، صفحه اصلی؛ برای خروج دوبار کلیک کنید"
 						className="flex items-center gap-2"
 						href="#home"
+						onDoubleClick={exitWebsite}
 						onClick={(event) => {
 							event.preventDefault();
 							navigateToTab("home");
 						}}
+						title="برای خروج دوبار کلیک کنید"
 					>
 						<span className="grid h-8 w-8 place-items-center rounded-lg bg-[#f2bb4d] text-forest">
 							<Icon name="book" className="h-4 w-4" />
@@ -282,10 +336,12 @@ function App() {
 									: "transition hover:text-white"
 							}
 							href="#home"
+							onDoubleClick={exitWebsite}
 							onClick={(event) => {
 								event.preventDefault();
 								navigateToTab("home");
 							}}
+							title="برای خروج دوبار کلیک کنید"
 						>
 							خانه
 						</a>
@@ -389,7 +445,9 @@ function App() {
 							aria-current={isActive ? "page" : undefined}
 							className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg py-1 text-[7px] transition ${isActive ? "bg-[#eaf3ef] font-bold text-forest" : "text-[#82918c] hover:bg-[#f5f8f6]"}`}
 							key={tab.id}
+							onDoubleClick={tab.id === "home" ? exitWebsite : undefined}
 							onClick={() => navigateToTab(tab.id)}
+							title={tab.id === "home" ? "برای خروج دوبار کلیک کنید" : undefined}
 							type="button"
 						>
 							<Icon name={tab.icon} className="h-3.5 w-3.5" />
@@ -693,7 +751,7 @@ function App() {
 					<ScholarshipDetail
 						isSaved={saved.includes(selectedId)}
 						key={selectedId}
-						onBack={() => navigateToTab("scholarships")}
+						onBack={() => window.history.back()}
 						onDocuments={() => navigateToTab(user ? "dashboard" : "login")}
 						onHome={() => navigateToTab("home")}
 						onLoginRequired={() => {
